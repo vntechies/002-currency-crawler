@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  currency-crawler
+
+  Sample SAM Template for currency-crawler
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 900
+
+Resources:
+  CurrencyCrawlFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: currency/
+      Handler: app.crawl
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Events:
+        InvocationLevel:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0 11 ? * MON-FRI *) # All scheduled events use UTC+0 time zone
+            DeadLetterConfig:
+              Type: SQS
+      Policies:
+        DynamoDBWritePolicy:
+          TableName: !Ref CurrencyTable
+
+  CurrencyGetFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: currency/
+      Handler: app.get_csv
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Events:
+        CurrencyCrawler:
+          Type: HttpApi # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /csv
+            Method: get
+            ApiId: !Ref CurrencyHTTPApi
+      Policies:
+        DynamoDBReadPolicy:
+          TableName: !Ref CurrencyTable
+
+  CurrencyHTTPApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration: 
+        AllowOrigins:
+          - "*"
+        AllowHeaders:
+          - "Access-Control-Allow-Origin"
+          - "Content-Type"
+          - "X-Requested-With"
+          - "Content-Transfer-Encoding"
+        AllowMethods:
+          - GET
+
+  CurrencyTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: dt
+        Type: String
+      #ProvisionedThroughput:
+      TableName: "Currency"
+
+Outputs:
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  CurrencyCrawlApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    Value: !Sub "https://${CurrencyHTTPApi}.execute-api.${AWS::Region}.amazonaws.com/crawl/"
+  CurrencyCrawlFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt CurrencyCrawlFunction.Arn
+  CurrencyCrawlFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt CurrencyCrawlFunctionRole.Arn
