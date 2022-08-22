@@ -245,3 +245,5 @@ $RECYCLE.BIN/
 __pycache__
 .aws-sam
 samconfig.toml
+
+credentials.json

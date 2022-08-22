@@ -1,41 +1,41 @@
-import boto3
-from config import logger
-from datetime import datetime
-from boto3.dynamodb.conditions import Key
+import os
+import google.auth
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 
-TABLE_NAME = 'Currency'
-REGION_NAME = 'ap-southeast-1'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = './credentials.json'
+SPREADSHEET_ID = os.environ.get('SPREADSHEET_ID')
+RANGE_NAME = os.environ.get('RANGE_NAME')
+VALUE_INPUT_OPTION = os.environ.get('VALUE_INPUT_OPTION')
 
-dynamodb_config = {
-    'region_name': REGION_NAME
-}
-dynamodb = boto3.resource('dynamodb', **dynamodb_config)
-table = dynamodb.Table(TABLE_NAME)
-
-
-def insert_to_dynamo(record):
+def append_to_db(values):
+    creds, _ = google.auth.default()
     try:
-        now = datetime.now()
-        now_str = now.strftime('%Y-%m-%d %H:%M:%S')
+        service = build('sheets', 'v4', credentials=creds)
+        # ["2022/03/17", "MBB", "23020", "25876", "198.31", "16962", "2996", "17169"]
+        body = {
+            'values': [values]
+        }
+        result = service.spreadsheets().values().append(
+            spreadsheetId=SPREADSHEET_ID, range=RANGE_NAME,
+            valueInputOption=VALUE_INPUT_OPTION, body=body).execute()
+        print(f"{(result.get('updates').get('updatedCells'))} cells appended.")
+        return result
 
-        record
-        record['dt'] = now_str
+    except HttpError as error:
+        print(f"An error occurred: {error}")
+        return error
 
-        table.put_item(Item=record)
-
-    except Exception as e:
-        logger.error(e)
-        raise e
-
-    return True
-
-
-def get_from_dynamo(start_date, end_date):
-    start_date_str = start_date.strftime("%Y-%m-%d")
-    end_date_str = end_date.strftime("%Y-%m-%d")
-    filter_expression = Key('date').between(start_date_str, end_date_str)
-
-    response = table.scan(
-        FilterExpression=filter_expression
-    )
-    return response
+# date bank USD	EUR	JPY	AUD	HKD	SGD
+def format_record(record):
+    arr = []
+    arr.append(record['date'])
+    arr.append(record['bank'])
+    arr.append(record['USD'])
+    arr.append(record['EUR'])
+    arr.append(record['JPY'])
+    arr.append(record['AUD'])
+    arr.append(record['HKD'])
+    arr.append(record['SGD'])
+    return arr
+    

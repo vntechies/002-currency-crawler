@@ -3,7 +3,6 @@ import json
 from bs4 import BeautifulSoup
 from datetime import datetime
 from config import CURRENCIES, logger
-from decimal import Decimal
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -61,13 +60,13 @@ def get_record(requested_date_str):
 
     record = {
         "bank": "MBB",
-        "date": requested_date.strftime("%Y-%m-%d")
+        "date": requested_date.strftime("%Y/%m/%d")
     }
 
     for currency in CURRENCIES:
         for rate in rates:
             if rate['currencyCode'] == currency:
                 ck = f"{rate['sell_bank_transfer']}"
-                record[currency] = Decimal(ck)
+                record[currency] = float(ck)
 
     return record

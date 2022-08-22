@@ -1,5 +1,6 @@
 from decimal import Decimal
 from time import sleep
+from random import randint
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
@@ -35,7 +36,7 @@ def get_record(requested_date_str, driver):
         By.CSS_SELECTOR, "div.datepicker-days > table > tbody")
     cal_body.find_element(
         By.XPATH, f"//td[text()='{requested_date.day}']").click()
-    sleep(5)
+    sleep(randint(10,20))
     delay = 3  # seconds
     try:
         WebDriverWait(driver, delay).until(
@@ -51,6 +52,18 @@ def get_record(requested_date_str, driver):
         "bank": "STB",
         "date": requested_date.strftime("%Y-%m-%d")
     }
+    for item in items:
+        currency = item.find(
+            "td", {"class": "td-cell01"}).contents[1].replace(' ', '')
+        if currency in CURRENCIES:
+            rate = item.find("td", {"class": "td-cell04"}
+                             ).contents[0].replace('.', '').replace(',', '.')
+            record[currency] = Decimal(rate)
+    table = driver.find_element(By.CSS_SELECTOR, "#bdOther > table")
+
+    content = table.get_attribute('innerHTML')
+    soup = BeautifulSoup(content, features="html.parser")
+    items = soup.findAll("tr", {"class": "tr-items"})
     for item in items:
         currency = item.find(
             "td", {"class": "td-cell01"}).contents[1].replace(' ', '')

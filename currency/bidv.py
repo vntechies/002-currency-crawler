@@ -1,4 +1,3 @@
-from decimal import Decimal
 from datetime import datetime
 import requests
 import json
@@ -40,13 +39,13 @@ def get_record(requested_date_str):
     rates = json_data['data']
     record = {
         "bank": "BIDV",
-        "date": requested_date.strftime("%Y-%m-%d")
+        "date": requested_date.strftime("%Y/%m/%d")
     }
 
     for currency in CURRENCIES:
         for rate in rates:
             if rate['currency'] == currency:
                 ck = rate['ban'].replace(',', '')
-                record[currency] = Decimal(ck)
+                record[currency] = float(ck)
 
     return record
