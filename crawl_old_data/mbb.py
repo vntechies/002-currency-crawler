@@ -16,8 +16,6 @@ def _init_request():
         'Accept-Language': 'en-US;q=0.8',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
-        # Requests sorts cookies= alphabetically
-        # 'Cookie': 'ASP.NET_SessionId=tqa2yya1v21crn4i3qy3brnd; __RequestVerificationToken=RTDcbBT0489ThjzKSfrcKn6V2w_-a8WvMOSVRc7m0UJhk8JMNNJaIs83p04w8J6oDlrPnuUw_lnpf3aDzSyJvfRVrvGURPOZp_Op0c9dzyc1; _fbp=fb.2.1660238327199.1286053738; alias_current=',
         'Pragma': 'no-cache',
         'Sec-Fetch-Dest': 'document',
         'Sec-Fetch-Mode': 'navigate',
@@ -38,8 +36,6 @@ def _get_info_from_api(date: str, cookies: dict, xsrf_token: str):
         'Accept-Language': 'en-US;q=0.8',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
-        # Requests sorts cookies= alphabetically
-        # 'Cookie': 'ASP.NET_SessionId=tqa2yya1v21crn4i3qy3brnd; __RequestVerificationToken=RTDcbBT0489ThjzKSfrcKn6V2w_-a8WvMOSVRc7m0UJhk8JMNNJaIs83p04w8J6oDlrPnuUw_lnpf3aDzSyJvfRVrvGURPOZp_Op0c9dzyc1; _fbp=fb.2.1660238327199.1286053738; alias_current=',
         'Pragma': 'no-cache',
         'Sec-Fetch-Dest': 'document',
         'Sec-Fetch-Mode': 'navigate',
